@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "source": "PCAP Hunter Offline Threat Intelligence Feed",
+    "description": "Consolidated offline blacklist containing high-confidence C2 IPs, Cobalt Strike teamservers, Feodo botnets, and AbuseIPDB 100% confidence malicious hosts.",
+    "version": "2026.10-offline"
+  },
+  "malicious_ips": {
+    "198.51.100.45": {
+      "family": "Cobalt Strike C2",
+      "threat_type": "Command and Control",
+      "confidence": 100,
+      "country": "US",
+      "severity": "CRITICAL",
+      "notes": "Known Cobalt Strike Team Server profile with default malleable C2 certificates"
+    },
+    "185.220.101.5": {
+      "family": "Tor Exit Node / Darknet C2",
+      "threat_type": "Proxy / C2 Relay",
+      "confidence": 95,
+      "country": "DE",
+      "severity": "HIGH",
+      "notes": "Actively observed hosting anonymous reverse shell ingress proxies"
+    },
+    "194.26.29.112": {
+      "family": "Qakbot (Qbot)",
+      "threat_type": "Banking Trojan / Initial Access C2",
+      "confidence": 99,
+      "country": "NL",
+      "severity": "CRITICAL",
+      "notes": "Active Tier-1 C2 node in Qakbot distribution campaign"
+    },
+    "45.154.255.88": {
+      "family": "Emotet",
+      "threat_type": "Modular Botnet C2",
+      "confidence": 100,
+      "country": "RU",
+      "severity": "CRITICAL",
+      "notes": "Emotet epoch-5 command and control listener"
+    },
+    "91.240.118.172": {
+      "family": "IcedID / BokBot",
+      "threat_type": "Loader C2",
+      "confidence": 92,
+      "country": "LT",
+      "severity": "HIGH",
+      "notes": "Observed communicating over encrypted non-standard TLS streams"
+    },
+    "104.244.76.13": {
+      "family": "Sliver C2",
+      "threat_type": "C2 Framework",
+      "confidence": 96,
+      "country": "US",
+      "severity": "CRITICAL",
+      "notes": "Sliver mTLS / HTTP beacon receiver endpoint"
+    },
+    "195.123.245.89": {
+      "family": "RedLine Stealer",
+      "threat_type": "Data Exfiltration Endpoint",
+      "confidence": 98,
+      "country": "BG",
+      "severity": "CRITICAL",
+      "notes": "Dedicated exfiltration destination for stolen browser cookies and credentials"
+    },
+    "185.143.223.12": {
+      "family": "AsyncRAT",
+      "threat_type": "Remote Access Trojan",
+      "confidence": 97,
+      "country": "SC",
+      "severity": "CRITICAL",
+      "notes": "AsyncRAT listening server on non-standard ports 6606/7707"
+    },
+    "89.208.103.241": {
+      "family": "AgentTesla",
+      "threat_type": "Keylogger / InfoStealer",
+      "confidence": 94,
+      "country": "RU",
+      "severity": "HIGH",
+      "notes": "Direct IP exfiltration host via raw SMTP/FTP stream"
+    },
+    "45.33.32.156": {
+      "family": "Scan / Exploit Scanner",
+      "threat_type": "Internet Scanner / Recon",
+      "confidence": 85,
+      "country": "US",
+      "severity": "MEDIUM",
+      "notes": "Automated internet scanner targeting vulnerable web services"
+    }
+  }
+}

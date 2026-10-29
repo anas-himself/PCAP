@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCAP Hunter - Offline Malware Traffic & C2 Beaconing Detector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="top-nav">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <circle cx="12" cy="11" r="3"/>
+          <path d="m14 13 3 3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">PCAP <span>HUNTER</span></div>
+        <div class="brand-subtitle">Offline Malware Traffic & C2 Beaconing Detector</div>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span>100% OFFLINE AIR-GAPPED</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Intake & Hero Section -->
+    <section class="hero-section">
+      <!-- Drag & Drop PCAP Intake -->
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="pcapFileInput" accept=".pcap,.pcapng,.cap" style="display:none;">
+        <div class="drop-zone-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <h3>Drop Wireshark Capture (.pcap / .pcapng)</h3>
+        <p>Supports large enterprise captures (500MB+ / 100k+ packets) via streaming iterator</p>
+        <button class="btn-file-select" type="button">Select PCAP File</button>
+      </div>
+
+      <!-- Quick Demo Malware PCAP -->
+      <div class="quick-demo-card">
+        <div>
+          <h4>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            Zero-Setup Malware Demo
+          </h4>
+          <p>Instant demonstration with pre-compiled multi-vector malware traffic capture:</p>
+          <div class="demo-pills">
+            <span class="demo-pill">Cobalt Strike C2</span>
+            <span class="demo-pill">DNS Tunneling</span>
+            <span class="demo-pill">Metasploit 4444</span>
+            <span class="demo-pill">10.6MB Exfil</span>
+          </div>
+        </div>
+        <button class="btn-demo" id="btnRunDemo" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          Run Built-in Malware PCAP
+        </button>
+      </div>
+    </section>
+
+    <!-- Results Section (revealed after upload/demo) -->
+    <div id="resultsSection">
+      <!-- HUD Metrics Bar -->
+      <section class="hud-grid">
+        <div class="hud-card">
+          <div class="hud-label">Total Packets</div>
+          <div class="hud-value" id="hudPackets">-</div>
+          <div class="hud-meta">Analyzed in memory stream</div>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-label">Capture Volume</div>
+          <div class="hud-value" id="hudData">-</div>
+          <div class="hud-meta">Duration: <span id="hudDuration">-</span></div>
+        </div>
+
+        <div class="hud-card critical">
+          <div class="hud-label">Threat Severity</div>
+          <div class="hud-value" style="font-size: 20px;">
+            <span class="badge badge-clean" id="hudThreatBadge">READY</span>
+          </div>
+          <div class="hud-meta">Composite 0-100 score</div>
+        </div>
+
+        <div class="hud-card critical">
+          <div class="hud-label">C2 Beacons</div>
+          <div class="hud-value" id="hudBeacons" style="color:var(--cyber-red);">-</div>
+          <div class="hud-meta">Engine 1 (std_dev &lt; 5s)</div>
+        </div>
+
+        <div class="hud-card warning">
+          <div class="hud-label">DNS Tunnels</div>
+          <div class="hud-value" id="hudDns" style="color:var(--cyber-amber);">-</div>
+          <div class="hud-meta">Engine 2 (Entropy &gt; 4.2)</div>
+        </div>
+
+        <div class="hud-card critical">
+          <div class="hud-label">Threat Intel Hits</div>
+          <div class="hud-value" id="hudIntel" style="color:var(--cyber-red);">-</div>
+          <div class="hud-meta">Engine 3 (Offline Blacklist)</div>
+        </div>
+
+        <div class="hud-card critical">
+          <div class="hud-label">Data Exfiltration</div>
+          <div class="hud-value" id="hudExfil" style="color:var(--cyber-red);">-</div>
+          <div class="hud-meta">Engine 4 (&gt; 10MB Outbound)</div>
+        </div>
+      </section>
+
+      <!-- Executive Forensic Summary Card -->
+      <section class="exec-summary-card" id="execSummaryContainer" style="display:none;">
+        <div class="exec-header">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cyber-cyan)" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            SOC Forensic Assessment &amp; Executive Summary
+          </h3>
+          <div class="action-buttons">
+            <button class="btn-report" id="btnDownloadReport" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Download PDF Incident Report
+            </button>
+            <button class="btn-secondary" id="btnExportJson" type="button">Export JSON</button>
+            <button class="btn-secondary" id="btnExportCsv" type="button">Export CSV</button>
+          </div>
+        </div>
+        <p class="exec-text" id="execSummaryText">Upload a capture file to generate an automated executive forensic summary.</p>
+      </section>
+
+      <!-- Visualizations Grid -->
+      <section class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h4>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyber-cyan)" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              Traffic Activity Timeline (Packets / Time)
+            </h4>
+          </div>
+          <div class="chart-container">
+            <canvas id="timelineChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h4>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyber-purple)" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a10 10 0 0 1 10 10h-10z"/>
+              </svg>
+              Protocol Breakdown
+            </h4>
+          </div>
+          <div class="chart-container">
+            <canvas id="protocolChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Additional Chart: Top Destination IPs -->
+      <section style="margin-bottom: 24px;">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h4>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyber-red)" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+              Top External Destination IPs (Data Volume)
+            </h4>
+          </div>
+          <div class="chart-container" style="height: 180px;">
+            <canvas id="topIpsChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabbed 4-Engine Forensic Findings & IOC Master -->
+      <section class="tabs-container">
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-target="tabBeacon">
+            C2 Beaconing Detector
+            <span class="tab-count" id="countTabBeacon">0</span>
+          </button>
+          <button class="tab-btn" data-target="tabDns">
+            DNS Tunneling Detector
+            <span class="tab-count" id="countTabDns">0</span>
+          </button>
+          <button class="tab-btn" data-target="tabSuspicious">
+            Suspicious Traffic &amp; Blacklist
+            <span class="tab-count" id="countTabSuspicious">0</span>
+          </button>
+          <button class="tab-btn" data-target="tabExfil">
+            Data Exfiltration
+            <span class="tab-count" id="countTabExfil">0</span>
+          </button>
+          <button class="tab-btn" data-target="tabIoc">
+            Indicators of Compromise (IOC)
+            <span class="tab-count" id="countTabIoc">0</span>
+          </button>
+        </div>
+
+        <div class="tab-content">
+          <!-- Tab 1: C2 Beaconing -->
+          <div class="tab-pane active" id="tabBeacon">
+            <div class="table-responsive">
+              <table class="forensic-table">
+                <thead>
+                  <tr>
+                    <th>Source Host</th>
+                    <th>Destination C2</th>
+                    <th>Port / Protocol</th>
+                    <th>Connections</th>
+                    <th>Mean Interval</th>
+                    <th>Standard Deviation</th>
+                    <th>Jitter</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyBeacon">
+                  <tr><td colspan="8" class="empty-state">No PCAP analyzed yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 2: DNS Tunneling -->
+          <div class="tab-pane" id="tabDns">
+            <div class="table-responsive">
+              <table class="forensic-table">
+                <thead>
+                  <tr>
+                    <th>Apex Domain</th>
+                    <th>Query Count</th>
+                    <th>Max Shannon Entropy</th>
+                    <th>Max Query Length</th>
+                    <th>Peak Rate</th>
+                    <th>Originating Client</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyDns">
+                  <tr><td colspan="7" class="empty-state">No PCAP analyzed yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 3: Suspicious Traffic -->
+          <div class="tab-pane" id="tabSuspicious">
+            <div class="table-responsive">
+              <table class="forensic-table">
+                <thead>
+                  <tr>
+                    <th>Alert Type</th>
+                    <th>Target IP / Host</th>
+                    <th>Port / Service</th>
+                    <th>Classification / Family</th>
+                    <th>Forensic Context</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodySuspicious">
+                  <tr><td colspan="6" class="empty-state">No PCAP analyzed yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 4: Data Exfiltration -->
+          <div class="tab-pane" id="tabExfil">
+            <div class="table-responsive">
+              <table class="forensic-table">
+                <thead>
+                  <tr>
+                    <th>Destination Drop</th>
+                    <th>Source Host</th>
+                    <th>Uploaded Volume</th>
+                    <th>Transfer Rate</th>
+                    <th>Upload:Download Ratio</th>
+                    <th>Ports Utilized</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyExfil">
+                  <tr><td colspan="7" class="empty-state">No PCAP analyzed yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 5: Unified IOC Master -->
+          <div class="tab-pane" id="tabIoc">
+            <div class="table-responsive">
+              <table class="forensic-table">
+                <thead>
+                  <tr>
+                    <th>Indicator</th>
+                    <th>Type</th>
+                    <th>Threat Family</th>
+                    <th>Source Detection Engine</th>
+                    <th>Severity</th>
+                    <th>Recommended SOC Containment Action</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyIoc">
+                  <tr><td colspan="6" class="empty-state">No PCAP analyzed yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingTitle">Analyzing Capture File...</div>
+    <div class="loading-sub" id="loadingSub">Running 4 detection engines in offline stream...</div>
+  </div>
+
+  <!-- Local Chart.js for 100% Offline Capability -->
+  <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

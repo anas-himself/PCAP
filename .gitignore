@@ -1,0 +1,139 @@
+# ==============================================================================
+# PCAP HUNTER - .gitignore
+# Prevents sensitive information, credentials, runtime data, and capture dumps
+# from leaking into version control.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Sensitive Network Traffic Captures & Uploads
+# (Contains raw network traffic, credentials, session cookies, internal IPs)
+# ------------------------------------------------------------------------------
+*.pcap
+*.pcapng
+*.cap
+*.dmp
+*.raw
+uploads/*
+!uploads/.gitkeep
+
+# ------------------------------------------------------------------------------
+# Generated Forensic Reports & Incident Artifacts
+# (Contains confidential incident reports, proprietary network analysis findings)
+# ------------------------------------------------------------------------------
+reports/generated/*
+!reports/generated/.gitkeep
+*.pdf
+temp_*.png
+reports/*.png
+
+# ------------------------------------------------------------------------------
+# Environment Variables, Secrets & Sensitive Credentials
+# ------------------------------------------------------------------------------
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+*.cert
+*.cer
+*.pfx
+*.p12
+*.pub
+secrets/
+secret/
+credentials/
+credentials.json
+token.json
+auth/
+config.local.py
+instance/
+
+# ------------------------------------------------------------------------------
+# Python & Compilation Artifacts
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ------------------------------------------------------------------------------
+# Virtual Environments
+# ------------------------------------------------------------------------------
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+bin/
+include/
+Lib/
+Scripts/
+
+# ------------------------------------------------------------------------------
+# Testing, Coverage & Profiling
+# ------------------------------------------------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# ------------------------------------------------------------------------------
+# IDE, Editor & OS Specific Files
+# ------------------------------------------------------------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+*.bak
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# ------------------------------------------------------------------------------
+# Logs & Databases
+# ------------------------------------------------------------------------------
+*.log
+*.sqlite
+*.sqlite3
+*.db
